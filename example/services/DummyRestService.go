@@ -1,18 +1,19 @@
 package example_services
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
 
 	"github.com/gorilla/mux"
-	cconf "github.com/pip-services3-go/pip-services3-commons-go/config"
-	cconv "github.com/pip-services3-go/pip-services3-commons-go/convert"
-	cdata "github.com/pip-services3-go/pip-services3-commons-go/data"
-	cerr "github.com/pip-services3-go/pip-services3-commons-go/errors"
-	crefer "github.com/pip-services3-go/pip-services3-commons-go/refer"
-	cvalid "github.com/pip-services3-go/pip-services3-commons-go/validate"
-	cservices "github.com/pip-services3-go/pip-services3-rpc-go/services"
+	cconf "github.com/pip-services3-gox/pip-services3-commons-gox/config"
+	cconv "github.com/pip-services3-gox/pip-services3-commons-gox/convert"
+	cdata "github.com/pip-services3-gox/pip-services3-commons-gox/data"
+	cerr "github.com/pip-services3-gox/pip-services3-commons-gox/errors"
+	crefer "github.com/pip-services3-gox/pip-services3-commons-gox/refer"
+	cvalid "github.com/pip-services3-gox/pip-services3-commons-gox/validate"
+	cservices "github.com/pip-services3-gox/pip-services3-rpc-gox/services"
 	data "github.com/pip-services3-gox/pip-services3-swagger-gox/example/data"
 	logic "github.com/pip-services3-gox/pip-services3-swagger-gox/example/logic"
 	"github.com/rakyll/statik/fs"
@@ -27,18 +28,17 @@ type DummyRestService struct {
 
 func NewDummyRestService() *DummyRestService {
 	c := DummyRestService{}
-	c.RestService = cservices.NewRestService()
-	c.RestService.IRegisterable = &c
-	c.DependencyResolver.Put("controller", crefer.NewDescriptor("pip-services-dummies", "controller", "default", "*", "*"))
+	c.RestService = cservices.InheritRestService(&c)
+	c.DependencyResolver.Put(context.Background(), "controller", crefer.NewDescriptor("pip-services-dummies", "controller", "default", "*", "*"))
 	return &c
 }
 
-func (c *DummyRestService) Configure(config *cconf.ConfigParams) {
-	c.RestService.Configure(config)
+func (c *DummyRestService) Configure(ctx context.Context, config *cconf.ConfigParams) {
+	c.RestService.Configure(ctx, config)
 }
 
-func (c *DummyRestService) SetReferences(references crefer.IReferences) {
-	c.RestService.SetReferences(references)
+func (c *DummyRestService) SetReferences(ctx context.Context, references crefer.IReferences) {
+	c.RestService.SetReferences(ctx, references)
 	depRes, depErr := c.DependencyResolver.GetOneRequired("controller")
 	if depErr == nil && depRes != nil {
 		c.controller = depRes.(logic.IDummyController)
@@ -58,6 +58,7 @@ func (c *DummyRestService) getPageByFilter(res http.ResponseWriter, req *http.Re
 	delete(params, "total")
 
 	result, err := c.controller.GetPageByFilter(
+		req.Context(),
 		c.GetCorrelationId(req),
 		cdata.NewFilterParamsFromValue(params), // W! need test
 		cdata.NewPagingParamsFromTuples(paginParams),
@@ -73,6 +74,7 @@ func (c *DummyRestService) getOneById(res http.ResponseWriter, req *http.Request
 		dummyId = vars["dummy_id"]
 	}
 	result, err := c.controller.GetOneById(
+		req.Context(),
 		c.GetCorrelationId(req),
 		dummyId)
 	c.SendResult(res, req, result, err)
@@ -98,6 +100,7 @@ func (c *DummyRestService) create(res http.ResponseWriter, req *http.Request) {
 	}
 
 	result, err := c.controller.Create(
+		req.Context(),
 		correlationId,
 		dummy,
 	)
@@ -124,6 +127,7 @@ func (c *DummyRestService) update(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	result, err := c.controller.Update(
+		req.Context(),
 		correlationId,
 		dummy,
 	)
@@ -140,6 +144,7 @@ func (c *DummyRestService) deleteById(res http.ResponseWriter, req *http.Request
 	}
 
 	result, err := c.controller.DeleteById(
+		req.Context(),
 		c.GetCorrelationId(req),
 		dummyId,
 	)

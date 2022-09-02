@@ -1,8 +1,10 @@
 package example_services
 
 import (
-	cref "github.com/pip-services3-go/pip-services3-commons-go/refer"
-	cservices "github.com/pip-services3-go/pip-services3-rpc-go/services"
+	"context"
+
+	cref "github.com/pip-services3-gox/pip-services3-commons-gox/refer"
+	cservices "github.com/pip-services3-gox/pip-services3-rpc-gox/services"
 )
 
 type DummyCommandableHttpService struct {
@@ -10,9 +12,8 @@ type DummyCommandableHttpService struct {
 }
 
 func NewDummyCommandableHttpService() *DummyCommandableHttpService {
-	c := DummyCommandableHttpService{
-		CommandableHttpService: cservices.NewCommandableHttpService("dummies2"),
-	}
-	c.DependencyResolver.Put("controller", cref.NewDescriptor("pip-services-dummies", "controller", "default", "*", "*"))
+	c := DummyCommandableHttpService{}
+	c.CommandableHttpService = cservices.InheritCommandableHttpService(&c, "dummies2")
+	c.DependencyResolver.Put(context.Background(), "controller", cref.NewDescriptor("pip-services-dummies", "controller", "default", "*", "*"))
 	return &c
 }

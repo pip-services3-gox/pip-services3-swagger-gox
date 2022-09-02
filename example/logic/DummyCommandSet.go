@@ -1,13 +1,13 @@
 package example_logic
 
 import (
-	"encoding/json"
+	"context"
 
-	ccomand "github.com/pip-services3-go/pip-services3-commons-go/commands"
-	cconv "github.com/pip-services3-go/pip-services3-commons-go/convert"
-	cdata "github.com/pip-services3-go/pip-services3-commons-go/data"
-	crun "github.com/pip-services3-go/pip-services3-commons-go/run"
-	cvalid "github.com/pip-services3-go/pip-services3-commons-go/validate"
+	ccomand "github.com/pip-services3-gox/pip-services3-commons-gox/commands"
+	cconv "github.com/pip-services3-gox/pip-services3-commons-gox/convert"
+	cdata "github.com/pip-services3-gox/pip-services3-commons-gox/data"
+	crun "github.com/pip-services3-gox/pip-services3-commons-gox/run"
+	cvalid "github.com/pip-services3-gox/pip-services3-commons-gox/validate"
 	data "github.com/pip-services3-gox/pip-services3-swagger-gox/example/data"
 )
 
@@ -34,10 +34,19 @@ func (c *DummyCommandSet) makeGetPageByFilterCommand() ccomand.ICommand {
 	return ccomand.NewCommand(
 		"get_dummies",
 		cvalid.NewObjectSchema().WithOptionalProperty("filter", cvalid.NewFilterParamsSchema()).WithOptionalProperty("paging", cvalid.NewPagingParamsSchema()),
-		func(correlationId string, args *crun.Parameters) (result interface{}, err error) {
-			filter := cdata.NewFilterParamsFromValue(args.Get("filter"))
-			paging := cdata.NewPagingParamsFromValue(args.Get("paging"))
-			return c.controller.GetPageByFilter(correlationId, filter, paging)
+		func(ctx context.Context, correlationId string, args *crun.Parameters) (result any, err error) {
+			var filter *cdata.FilterParams
+			var paging *cdata.PagingParams
+
+			if data, contains := args.Get("filter"); contains {
+				filter = cdata.NewFilterParamsFromValue(data)
+			}
+
+			if data, contains := args.Get("paging"); contains {
+				paging = cdata.NewPagingParamsFromValue(data)
+			}
+
+			return c.controller.GetPageByFilter(ctx, correlationId, filter, paging)
 		},
 	)
 }
@@ -46,9 +55,9 @@ func (c *DummyCommandSet) makeGetOneByIdCommand() ccomand.ICommand {
 	return ccomand.NewCommand(
 		"get_dummy_by_id",
 		cvalid.NewObjectSchema().WithRequiredProperty("dummy_id", cconv.String),
-		func(correlationId string, args *crun.Parameters) (result interface{}, err error) {
+		func(ctx context.Context, correlationId string, args *crun.Parameters) (result any, err error) {
 			id := args.GetAsString("dummy_id")
-			return c.controller.GetOneById(correlationId, id)
+			return c.controller.GetOneById(ctx, correlationId, id)
 		},
 	)
 }
@@ -57,12 +66,21 @@ func (c *DummyCommandSet) makeCreateCommand() ccomand.ICommand {
 	return ccomand.NewCommand(
 		"create_dummy",
 		cvalid.NewObjectSchema().WithRequiredProperty("dummy", data.NewDummySchema()),
-		func(correlationId string, args *crun.Parameters) (result interface{}, err error) {
-			val, _ := json.Marshal(args.Get("dummy"))
+		func(ctx context.Context, correlationId string, args *crun.Parameters) (result any, err error) {
 			var entity data.Dummy
-			json.Unmarshal(val, &entity)
 
-			return c.controller.Create(correlationId, entity)
+			if _val, ok := args.Get("dummy"); ok {
+				val, _ := cconv.JsonConverter.ToJson(_val)
+				obj, err := cconv.JsonConverter.FromJson(val)
+
+				if err != nil {
+					return nil, err
+				}
+
+				entity = obj.(data.Dummy)
+			}
+
+			return c.controller.Create(ctx, correlationId, entity)
 		},
 	)
 }
@@ -71,11 +89,20 @@ func (c *DummyCommandSet) makeUpdateCommand() ccomand.ICommand {
 	return ccomand.NewCommand(
 		"update_dummy",
 		cvalid.NewObjectSchema().WithRequiredProperty("dummy", data.NewDummySchema()),
-		func(correlationId string, args *crun.Parameters) (result interface{}, err error) {
-			val, _ := json.Marshal(args.Get("dummy"))
+		func(ctx context.Context, correlationId string, args *crun.Parameters) (result any, err error) {
 			var entity data.Dummy
-			json.Unmarshal(val, &entity)
-			return c.controller.Update(correlationId, entity)
+
+			if _val, ok := args.Get("dummy"); ok {
+				val, _ := cconv.JsonConverter.ToJson(_val)
+				obj, err := cconv.JsonConverter.FromJson(val)
+
+				if err != nil {
+					return nil, err
+				}
+
+				entity = obj.(data.Dummy)
+			}
+			return c.controller.Update(ctx, correlationId, entity)
 		},
 	)
 }
@@ -84,9 +111,9 @@ func (c *DummyCommandSet) makeDeleteByIdCommand() ccomand.ICommand {
 	return ccomand.NewCommand(
 		"delete_dummy",
 		cvalid.NewObjectSchema().WithRequiredProperty("dummy_id", cconv.String),
-		func(correlationId string, args *crun.Parameters) (result interface{}, err error) {
+		func(ctx context.Context, correlationId string, args *crun.Parameters) (result any, err error) {
 			id := args.GetAsString("dummy_id")
-			return c.controller.DeleteById(correlationId, id)
+			return c.controller.DeleteById(ctx, correlationId, id)
 		},
 	)
 }

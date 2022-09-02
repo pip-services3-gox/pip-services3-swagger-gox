@@ -34,8 +34,7 @@ type MyRestService struct {
 
 func NewMyRestService() *MyRestService {
 	c := MyRestService{}
-	c.RestService = cservices.NewRestService()
-	c.RestService.IRegisterable = &c
+	c.RestService = cservices.InheritRestService(&c)
 	c.BaseRoute = "myservice"
   c.SwaggerEnable = true
 	return &c
@@ -122,7 +121,7 @@ Finally, remember to add factories to your container, to allow it creating requi
 ...
 import (
 	cproc "github.com/pip-services3-go/pip-services3-container-go/container"
-	rbuild "github.com/pip-services3-go/pip-services3-rpc-go/build"
+	rbuild "github.com/pip-services3-gox/pip-services3-rpc-gox/build"
 	sbuild "github.com/pip-services3-gox/pip-services3-swagger-gox/build"
   ...
 )
@@ -152,7 +151,7 @@ The result shall look similar to the picture below.
 ## Develop
 
 For development you shall install the following prerequisites:
-* Golang 1.13
+* Golang 1.18+
 * Visual Studio Code or another IDE of your choice
 * Docker
 
@@ -182,3 +181,4 @@ Before committing changes run dockerized build and test as:
 
 The Golang version of Pip.Services is created and maintained by:
 - **Sergey Seroukhov**
+- **Danil Prisiazhnyi**

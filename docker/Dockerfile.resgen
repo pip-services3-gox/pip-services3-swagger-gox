@@ -1,6 +1,6 @@
 FROM golang:1.18
 
-RUN go get github.com/rakyll/statik
+RUN go install github.com/rakyll/statik@latest
 
 WORKDIR /app
 

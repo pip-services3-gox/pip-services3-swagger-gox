@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-	cconv "github.com/pip-services3-go/pip-services3-commons-go/convert"
-	cservices "github.com/pip-services3-go/pip-services3-rpc-go/services"
+	cconv "github.com/pip-services3-gox/pip-services3-commons-gox/convert"
+	cservices "github.com/pip-services3-gox/pip-services3-rpc-gox/services"
 	"github.com/rakyll/statik/fs"
 
 	_ "github.com/pip-services3-gox/pip-services3-swagger-gox/resources"
@@ -22,8 +22,7 @@ type SwaggerService struct {
 
 func NewSwaggerService() *SwaggerService {
 	c := SwaggerService{}
-	c.RestService = cservices.NewRestService()
-	c.RestService.IRegisterable = &c
+	c.RestService = cservices.InheritRestService(&c)
 	c.BaseRoute = "swagger"
 	c.routes = map[string]string{}
 
@@ -32,9 +31,6 @@ func NewSwaggerService() *SwaggerService {
 		panic(err)
 	}
 	c.fs = sfs
-
-	// c.RegisterOpenApiSpec("dummies", "/dummies/swagger")
-	// c.RegisterOpenApiSpec("dummies2", "/dummies2/swagger")
 
 	return &c
 }

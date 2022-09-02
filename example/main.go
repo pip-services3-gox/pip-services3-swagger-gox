@@ -2,21 +2,24 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 
-	cconf "github.com/pip-services3-go/pip-services3-commons-go/config"
-	cref "github.com/pip-services3-go/pip-services3-commons-go/refer"
-	crun "github.com/pip-services3-go/pip-services3-commons-go/run"
-	ccount "github.com/pip-services3-go/pip-services3-components-go/count"
-	clog "github.com/pip-services3-go/pip-services3-components-go/log"
-	cservices "github.com/pip-services3-go/pip-services3-rpc-go/services"
+	cconf "github.com/pip-services3-gox/pip-services3-commons-gox/config"
+	cref "github.com/pip-services3-gox/pip-services3-commons-gox/refer"
+	crun "github.com/pip-services3-gox/pip-services3-commons-gox/run"
+	ccount "github.com/pip-services3-gox/pip-services3-components-gox/count"
+	clog "github.com/pip-services3-gox/pip-services3-components-gox/log"
+	cservices "github.com/pip-services3-gox/pip-services3-rpc-gox/services"
 	logic "github.com/pip-services3-gox/pip-services3-swagger-gox/example/logic"
 	services "github.com/pip-services3-gox/pip-services3-swagger-gox/example/services"
 	sservices "github.com/pip-services3-gox/pip-services3-swagger-gox/services"
 )
 
 func main() {
+	ctx := context.Background()
+
 	// Create components
 	logger := clog.NewConsoleLogger()
 	counter := ccount.NewLogCounters()
@@ -28,7 +31,7 @@ func main() {
 	heartbeatService := cservices.NewHeartbeatRestService()
 	swaggerService := sservices.NewSwaggerService()
 
-	components := []interface{}{
+	components := []any{
 		logger,
 		counter,
 		controller,
@@ -41,27 +44,27 @@ func main() {
 	}
 
 	// Configure components
-	logger.Configure(cconf.NewConfigParamsFromTuples(
+	logger.Configure(ctx, cconf.NewConfigParamsFromTuples(
 		"level", "trace",
 	))
 
-	httpEndpoint.Configure(cconf.NewConfigParamsFromTuples(
+	httpEndpoint.Configure(ctx, cconf.NewConfigParamsFromTuples(
 		"connection.prototol", "http",
 		"connection.host", "localhost",
 		"connection.port", 8080,
 	))
 
-	restService.Configure(cconf.NewConfigParamsFromTuples(
+	restService.Configure(ctx, cconf.NewConfigParamsFromTuples(
 		"swagger.enable", true,
 	))
 
-	httpService.Configure(cconf.NewConfigParamsFromTuples(
+	httpService.Configure(ctx, cconf.NewConfigParamsFromTuples(
 		"base_route", "dummies2",
 		"swagger.enable", true,
 	))
 
 	// Set references
-	references := cref.NewReferencesFromTuples(
+	references := cref.NewReferencesFromTuples(ctx,
 		cref.NewDescriptor("pip-services", "logger", "console", "default", "1.0"), logger,
 		cref.NewDescriptor("pip-services", "counter", "log", "default", "1.0"), counter,
 		cref.NewDescriptor("pip-services", "endpoint", "http", "default", "1.0"), httpEndpoint,
@@ -73,12 +76,12 @@ func main() {
 		cref.NewDescriptor("pip-services", "swagger-service", "http", "default", "1.0"), swaggerService,
 	)
 
-	cref.Referencer.SetReferences(references, components)
+	cref.Referencer.SetReferences(ctx, references, components)
 
 	// Open components
-	err := crun.Opener.Open("", components)
+	err := crun.Opener.Open(ctx, "", components)
 	if err != nil {
-		logger.Error("", err, "Failed to open components")
+		logger.Error(ctx, "", err, "Failed to open components")
 		return
 	}
 
@@ -88,8 +91,8 @@ func main() {
 	reader.ReadString('\n')
 
 	// Close components
-	err = crun.Closer.Close("", components)
+	err = crun.Closer.Close(ctx, "", components)
 	if err != nil {
-		logger.Error("", err, "Failed to close components")
+		logger.Error(ctx, "", err, "Failed to close components")
 	}
 }
