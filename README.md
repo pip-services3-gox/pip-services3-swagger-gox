@@ -10,9 +10,11 @@ The module contains the following packages:
 
 <a name="links"></a> Quick links:
 
+* [Configuration](http://docs.pipservices.org/conceptual/configuration/component_configuration/)
+* [API Reference](https://godoc.org/github.com/pip-services3-gox/pip-services3-swagger-gox/)
 * [Change Log](CHANGELOG.md)
-* [Get Help](https://www.pipservices.org/community/help)
-* [Contribute](https://www.pipservices.org/community/contribute)
+* [Get Help](http://docs.pipservices.org/get_help/)
+* [Contribute](http://docs.pipservices.org/contribute/)
 
 
 ## Use
@@ -127,12 +129,12 @@ import (
 )
 
 type MyProcess struct {
-	cproc.ProcessContainer
+	*cproc.ProcessContainer
 }
 
 func NewMyProcess() *MyProcess {
 	c := MyProcess{}
-	c.ProcessContainer = *cproc.NewProcessContainer("myservice", "MyService microservice")
+	c.ProcessContainer = cproc.NewProcessContainer("myservice", "MyService microservice")
 	c.AddFactory(factory.NewMyServiceFactory())
 	c.AddFactory(rbuild.NewDefaultRpcFactory())
 	c.AddFactory(sbuild.NewDefaultSwaggerFactory())
