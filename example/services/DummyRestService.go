@@ -170,7 +170,7 @@ func (c *DummyRestService) Register() {
 
 	c.RegisterRoute(
 		"get", "/dummies",
-		&cvalid.NewObjectSchema().
+		cvalid.NewObjectSchema().
 			WithOptionalProperty("key", cconv.String).
 			WithOptionalProperty("skip", cconv.Long).
 			WithOptionalProperty("take", cconv.Long).
@@ -180,28 +180,28 @@ func (c *DummyRestService) Register() {
 
 	c.RegisterRoute(
 		"get", "/dummies/{dummy_id}",
-		&cvalid.NewObjectSchema().
+		cvalid.NewObjectSchema().
 			WithRequiredProperty("dummy_id", cconv.String).Schema,
 		c.getOneById,
 	)
 
 	c.RegisterRoute(
 		"post", "/dummies",
-		&cvalid.NewObjectSchema().
+		cvalid.NewObjectSchema().
 			WithRequiredProperty("body", data.NewDummySchema()).Schema,
 		c.create,
 	)
 
 	c.RegisterRoute(
 		"put", "/dummies",
-		&cvalid.NewObjectSchema().
+		cvalid.NewObjectSchema().
 			WithRequiredProperty("body", data.NewDummySchema()).Schema,
 		c.update,
 	)
 
 	c.RegisterRoute(
 		"delete", "/dummies/{dummy_id}",
-		&cvalid.NewObjectSchema().
+		cvalid.NewObjectSchema().
 			WithRequiredProperty("dummy_id", cconv.String).Schema,
 		c.deleteById,
 	)
